@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+edit mode
+<form method="post">
+    {% for part in pc.PC.simple %}
+    <label for={{part}}>{{part}}</label>
+    <input type="text" name={{part}} value={{pc.PC.simple[part]}}>
+    {% endfor %}
+    <h4>health</h4>
+    ap: 
+    <input type="number" name="ap-value" value={{pc.PC.health.ap.value}}>
+    /
+    <input type="number" name="ap-max" value={{pc.PC.health.ap.max}}>
+    hp: 
+    <input type="number" name="hp-value" value={{pc.PC.health.hp.value}}>
+    /
+    <input type="number" name="hp-max" value={{pc.PC.health.hp.max}}>
+    <h4>death turns</h4>
+    <input type="number" name="dt-value" value={{pc.PC.dt.value}}>
+    /
+    <input type="number" name="dt-max" value={{pc.PC.dt.max}}>
+    <h4>movement</h4>
+    {% for terrain in pc.PC.speed %}
+    <label for={{terrain}}>{{terrain}}:</label>
+    <input type="number" name={{terrain}} value={{pc.PC.speed[terrain]}}>
+    {% endfor %}
+    <br>
+    <div>
+        <button type="button" class = "click-to-display">add new skill-quest</button>
+        <div class = "display hidden">
+            skill:
+            <select name="quest-skill">
+                <option value="per">performer</option>
+                <option value="ari">aristocrat</option>
+                <option value="oft">of the people</option>
+                <option value="eve">everyman</option>
+                <option value="hun">hunter</option>
+                <option value="wel">well read</option>
+                <option value="han">handy</option>
+                <option value="nat">naturalist</option>
+            </select>
+            <input type="text" name="quest-name" placeholder="quest name">
+            <input type="text" name="quest-activity" placeholder="quest activity">
+            <input type="number" name="quest-goal" placeholder="quest goal">
+            <input type="text" name="quest-unit" placeholder="quest unit">
+            <button name = "fin" value = "add">add</button>
+        </div>
+    </div>
+    {% for skill in pc.PC.skills %}
+    <div>
+        <span class = "click-to-display">{{pc.PC.skills[skill].name}}</span> <input type="number" name={{skill}}-points value={{pc.PC.skills[skill].points}}> {{pc.PC.skills[skill].mod}}
+        <div class = "display hidden">
+            {% for attribute in pc.PC.skills[skill].attrib %}
+            {{attribute}}
+            {% endfor %}
+            <br>
+            {{pc.PC.skills[skill].desc}} <br>
+            {{pc.PC.skills[skill].activ}} <br>
+        </div> <br>
+        {% if skill not in ["ath","sne"] %}
+        {% for quest in pc.PC.skills[skill].bank %}
+            {% if not quest.quest.completed%}
+            {{quest.quest.name}}: 
+            {{quest.quest.activity}} <br>
+            {{quest.quest.current}}/{{quest.quest.goal}} <br>
+            <progress name={{quest.quest.name}} value={{quest.quest.current}} max={{quest.quest.goal}}></progress><button value=add-quest-progress,{{quest.id}} name="button">+</button>
+            {{quest.quest.unit}}
+            {% else %}
+            <span style="color: green;">
+                {{quest.quest.name}}
+            </span>
+            {% endif %}
+
+        {% endfor %}
+        {% endif %}
+
+    </div>
+    {% endfor %}
+    <div>
+        {% for slot in pc.equipment if slot not in ["wallet","ingredient-stash","item-ready"] %}
+        <h4>{{slot}}</h4>
+        <div>
+            {% if pc.equipment[slot] != None %}
+            <span class="click-to-display">{{pc.equipment[slot].item.name}}</span>
+            <div class = "display hidden">
+                <div>
+                    {% for attribute in pc.equipment[slot].item if attribute not in ["name","desc"] %}
+                        {{attribute}}: {{pc.equipment[slot].item[attribute]}}
+                    {% endfor %}
+                </div>
+                {{pc.equipment[slot].item.desc}}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <br>
+    <button name = "button">save</button>
+    <button value = "finish" name = "button">finish</button>
+</form>
+<script defer src="/js/sheet.js"></script>
+{% endblock %}

@@ -1,0 +1,6 @@
+.hidden {
+    display: none;
+}
+.click-to-display{
+    cursor: pointer;
+}

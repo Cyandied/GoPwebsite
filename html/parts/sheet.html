@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form method="post">
+{% for part in pc.PC.simple %}
+    {{part}}: {{pc.PC.simple[part]}}<br>
+{% endfor %}
+<h4>health</h4>
+ap: 
+<input type="number" name="ap-value" value={{pc.PC.health.ap.value}}>
+/
+<input type="number" name="ap-max" value={{pc.PC.health.ap.max}}>
+hp: 
+<input type="number" name="hp-value" value={{pc.PC.health.hp.value}}>
+/
+<input type="number" name="hp-max" value={{pc.PC.health.hp.max}}>
+<h4>death turns</h4>
+<input type="number" name="dt-value" value={{pc.PC.dt.value}}>
+/
+<input type="number" name="dt-max" value={{pc.PC.dt.max}}>
+<h4>movement</h4>
+{% for terrain in pc.PC.speed %}
+{{terrain}}: {{pc.PC.speed[terrain]}}<br>
+{% endfor %}
+
+{% for skill in pc.PC.skills %}
+    <div>
+        <span class = "click-to-display">{{pc.PC.skills[skill].name}} {{pc.PC.skills[skill].points}} {{pc.PC.skills[skill].mod}}</span>
+        <div class = "display hidden">
+            {% for attribute in pc.PC.skills[skill].attrib %}
+            {{attribute}}
+            {% endfor %}
+            <br>
+            {{pc.PC.skills[skill].desc}} <br>
+            {{pc.PC.skills[skill].activ}} <br>
+        </div> <br>
+        {% if skill not in ["ath","sne"] %}
+        {% for quest in pc.PC.skills[skill].bank %}
+            {% if not quest.quest.completed%}
+            {{quest.quest.name}}: 
+            {{quest.quest.activity}} <br>
+            {{quest.quest.current}}/{{quest.quest.goal}} <br>
+            <progress name={{quest.quest.name}} value={{quest.quest.current}} max={{quest.quest.goal}}></progress><button value=add-quest-progress,{{quest.id}} name="button">+</button>
+            {{quest.quest.unit}}
+            {% else %}
+            <span style="color: green;">
+                {{quest.quest.name}}
+            </span>
+            {% endif %}
+
+        {% endfor %}
+        {% endif %}
+
+    </div>
+    {% endfor %}
+
+
+
+    <button value="edit-mode" name="button">edit sheet</button>
+    <button name="button">save</button>
+</form>
+
+<script defer src="/js/sheet.js"></script>
+{% endblock %}

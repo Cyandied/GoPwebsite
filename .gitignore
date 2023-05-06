@@ -1,0 +1,6 @@
+venv
+__pycache__
+backend/__pycache__
+backend/classes/__pycache__
+PCs/*
+README.md
