@@ -2,6 +2,8 @@ import backend.func as func
 from os import listdir
 import json
 from backend.classes.charClasses import *
+from backend.classes.itemClasses import *
+from backend.classes.classes import *
 
 def map(request,map):
     if request.method == "POST":
@@ -44,41 +46,48 @@ def map(request,map):
                     }
     return map
 
-def makeNewJson(jsonNam):
+def getTemplate(itemType):
+    item = Item(itemType)
+    return item
+
+def saveItem(request, itemType):
+    item = Item(itemType)
+    form = request.form
+    for entry in item.item:
+        if entry not in ["amount","notes"]:
+            item.item[entry] = form[entry]
+    return item.item
+
+def makeNewJson(jsonNam, id):
     PCs = [] 
     for pc in listdir("PCs"):
         PCs.append(pc.split(".")[0])
     if jsonNam not in PCs:
         pc = PC().__dict__
+        pc["userID"] = id
         with open(f'PCs/{jsonNam}.json', "x") as f:
             f.write(json.dumps(pc))
     return
 
 def savePC(form:dict,pc:PC,jsonNam:str):
 
-    for simpleEntry in pc.PC["simple"]:
-        pc.PC["simple"][simpleEntry] = int(form[simpleEntry]) if simpleEntry in ["level","carry-capacity"] else form[simpleEntry]
+    for simpleEntry in pc.simple:
+        pc.simple[simpleEntry] = int(form[simpleEntry]) if simpleEntry in ["level","carry-capacity"] else form[simpleEntry]
     
-    for terrain in pc.PC["speed"]:
-        pc.PC["speed"][terrain] = int(form[terrain])
+    for terrain in pc.pc["speed"]:
+        pc.pc["speed"][terrain] = int(form[terrain])
     
-    for key, healthEntry in pc.PC["health"].items():
+    for key, healthEntry in pc.pc["health"].items():
         pc.modifyHealth(form["dt-value"], "dt")
-        pc.PC["dt"]["max"] = int(form["dt-max"])
+        pc.pc["dt"]["max"] = int(form["dt-max"])
         healthEntry["max"] = int(form[f'{key}-max'])
         if pc.modifyHealth(form[f'{key}-value'],key):
             break
 
-    for key, skill in pc.PC["skills"].items():
+    for key, skill in pc.pc["skills"].items():
         skill["points"] = int(form[f'{key}-points']) if int(form[f'{key}-points']) < 15 else 15
 
     pc.calcSkillMods()
-
-
-
-
-
-
 
     button = form["button"].split(",")
 
@@ -92,9 +101,9 @@ def savePC(form:dict,pc:PC,jsonNam:str):
         f.write(json.dumps(pc.__dict__))
 
 def saveDetails(form:dict,pc:PC,jsonNam:str):
-    for key, healthEntry in pc.PC["health"].items():
+    for key, healthEntry in pc.pc["health"].items():
         pc.modifyHealth(form["dt-value"], "dt")
-        pc.PC["dt"]["max"] = int(form["dt-max"])
+        pc.pc["dt"]["max"] = int(form["dt-max"])
         healthEntry["max"] = int(form[f'{key}-max'])
         if pc.modifyHealth(form[f'{key}-value'],key):
             break
@@ -107,5 +116,11 @@ def saveDetails(form:dict,pc:PC,jsonNam:str):
     with open(f'PCs/{jsonNam}.json','w') as f:
         f.write(json.dumps(pc.__dict__))
 
-
+def newUser(name:str,password:str,make:bool):
+    if make:
+        with open("users.json","r") as f:
+            users = json.loads(f.read())
+        users.append(User(name,password).__dict__)
+        with open("users.json",'w') as f:
+            f.write(json.dumps(users))
 

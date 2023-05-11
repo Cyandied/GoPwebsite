@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post">
+    <input type="text" name="id" value="{{currentID}}" class = "hidden">
+    <select name="itemType">
+        {% for itemType in itemTypes %}
+        <option value="{{itemType}}" {% if itemType is eq(itemList.template.type) %} selected {% endif %}>{{itemType}}
+        </option>
+        {% endfor %}
+    </select>
+
+    <button value="get-template" name="button">get template</button>
+    <div class="listicle-container">
+        {% for input in itemList.template %}
+        {% if input is not in ["desc","amount", "notes"] %}
+        <label for={{input}}>{{input}}:</label>
+        <input type="text" name="{{input}}" {% if input is eq("type") %} readonly {% endif %} value="{{itemList.template[input]}}">
+        {% elif input is not in ["amount", "notes"] %}
+        <span style="width: 100%;">
+            <label for={{input}}>{{input}}:</label>
+            <textarea name={{input}} style="width: 100%;" rows="3" value="{{itemList.template[input]}}">{{itemList.template[input]}}</textarea>
+        </span>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <button value="save" name="button">save</button>
+    <button value="index" name="button">to homepage</button>
+
+    {% for category in itemTypes %}
+    <h4>{{category}}</h4>
+    <div class="listicle-container">
+        {% for item in itemList %}
+        {% if itemList[item].type is eq(category) and item is not eq("template") %}
+        <div>
+            <span class="click-to-display listicle">{{itemList[item].name}}</span>
+            <div class="display hidden">
+                {% for attribute in itemList[item] %}
+                {% if attribute not in ["name","desc", "amount","notes"] %}
+                {{attribute}}: {{itemList[item][attribute]}} <br>
+                {% endif %}
+                {% endfor %}
+                {{itemList[item].desc}} <br>
+                <button value={{item}} name="button">edit</button>
+                <button value="{{item}}_del" name="button">delete</button>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+</form>
+<script defer src="/js/item.js"></script>
+{% endblock %}

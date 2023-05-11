@@ -3,27 +3,27 @@
 {% block content %}
 edit mode
 <form method="post">
-    {% for part in pc.PC.simple %}
+    {% for part in pc.simple %}
     <label for={{part}}>{{part}}</label>
-    <input type="text" name={{part}} value={{pc.PC.simple[part]}}>
+    <input type="text" name={{part}} value={{pc.simple[part]}}>
     {% endfor %}
     <h4>health</h4>
     ap: 
-    <input type="number" name="ap-value" value={{pc.PC.health.ap.value}}>
+    <input type="number" name="ap-value" value={{pc.pc.health.ap.value}}>
     /
-    <input type="number" name="ap-max" value={{pc.PC.health.ap.max}}>
+    <input type="number" name="ap-max" value={{pc.pc.health.ap.max}}>
     hp: 
-    <input type="number" name="hp-value" value={{pc.PC.health.hp.value}}>
+    <input type="number" name="hp-value" value={{pc.pc.health.hp.value}}>
     /
-    <input type="number" name="hp-max" value={{pc.PC.health.hp.max}}>
+    <input type="number" name="hp-max" value={{pc.pc.health.hp.max}}>
     <h4>death turns</h4>
-    <input type="number" name="dt-value" value={{pc.PC.dt.value}}>
+    <input type="number" name="dt-value" value={{pc.pc.dt.value}}>
     /
-    <input type="number" name="dt-max" value={{pc.PC.dt.max}}>
+    <input type="number" name="dt-max" value={{pc.pc.dt.max}}>
     <h4>movement</h4>
-    {% for terrain in pc.PC.speed %}
+    {% for terrain in pc.pc.speed %}
     <label for={{terrain}}>{{terrain}}:</label>
-    <input type="number" name={{terrain}} value={{pc.PC.speed[terrain]}}>
+    <input type="number" name={{terrain}} value={{pc.pc.speed[terrain]}}>
     {% endfor %}
     <br>
     <div>
@@ -47,19 +47,19 @@ edit mode
             <button name = "fin" value = "add">add</button>
         </div>
     </div>
-    {% for skill in pc.PC.skills %}
+    {% for skill in pc.pc.skills %}
     <div>
-        <span class = "click-to-display">{{pc.PC.skills[skill].name}}</span> <input type="number" name={{skill}}-points value={{pc.PC.skills[skill].points}}> {{pc.PC.skills[skill].mod}}
+        <span class = "click-to-display">{{pc.pc.skills[skill].name}}</span> <input type="number" name={{skill}}-points value={{pc.pc.skills[skill].points}}> {{pc.pc.skills[skill].mod}}
         <div class = "display hidden">
-            {% for attribute in pc.PC.skills[skill].attrib %}
+            {% for attribute in pc.pc.skills[skill].attrib %}
             {{attribute}}
             {% endfor %}
             <br>
-            {{pc.PC.skills[skill].desc}} <br>
-            {{pc.PC.skills[skill].activ}} <br>
+            {{pc.pc.skills[skill].desc}} <br>
+            {{pc.pc.skills[skill].activ}} <br>
         </div> <br>
         {% if skill not in ["ath","sne"] %}
-        {% for quest in pc.PC.skills[skill].bank %}
+        {% for quest in pc.pc.skills[skill].bank %}
             {% if not quest.quest.completed%}
             {{quest.quest.name}}: 
             {{quest.quest.activity}} <br>
@@ -82,14 +82,14 @@ edit mode
         <h4>{{slot}}</h4>
         <div>
             {% if pc.equipment[slot] != None %}
-            <span class="click-to-display">{{pc.equipment[slot].item.name}}</span>
+            <span class="click-to-display">{{pc.equipment[slot].name}}</span>
             <div class = "display hidden">
                 <div>
-                    {% for attribute in pc.equipment[slot].item if attribute not in ["name","desc"] %}
-                        {{attribute}}: {{pc.equipment[slot].item[attribute]}}
+                    {% for attribute in pc.equipment[slot] if attribute not in ["name","desc"] %}
+                        {{attribute}}: {{pc.equipment[slot][attribute]}}
                     {% endfor %}
                 </div>
-                {{pc.equipment[slot].item.desc}}
+                {{pc.equipment[slot].desc}}
             </div>
             {% endif %}
         </div>

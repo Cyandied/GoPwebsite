@@ -1,6 +1,8 @@
-import math
+from backend.classes.itemClasses import *
+import uuid
 
-
+def id():
+    return str(uuid.uuid4())
 
 class SkillQuest:
     def __init__(self, skill:str = "",name:str = "", activity:str = "", goal:int = 0, current:int = 0, unit:str = "", completed:bool = False, existingQuest:dict = None) -> None:
@@ -25,15 +27,16 @@ class SkillQuest:
 
 class PC:
     def __init__(self, existingPC:dict = None) -> None:
-        self.PC = {
-            "simple":{
+        self.userID = "" if existingPC == None else existingPC["userID"]
+        self.simple = {
                 "name":"",
                 "player-name":"",
                 "level":0,
                 "class":"",
                 "race":"",
                 "carry-capacity":0
-            },
+        } if existingPC == None else existingPC["simple"]
+        self.pc = {
             "health":{
                 "ap":{
                     "min":0,
@@ -144,13 +147,31 @@ class PC:
                     "points":0
                 }
             }
-        } if existingPC == None else existingPC["PC"]
+        } if existingPC == None else existingPC["pc"]
+        self.action = {
+            "sets":{
+                "current":[]
+            },
+            "spells":[],
+            "class":[],
+            "race":[],
+            "other":[]
+        }if existingPC == None else existingPC["action"]
+        self.bag = {
+            "consumables":{},
+            "weapons":{},
+            "armors":{},
+            "staffs":{},
+            "trade-goods":{},
+            "crafting-parts":{},
+            "other":{}
+        } if existingPC == None else existingPC["bag"]
         self.equipment = {
             "weapon":None,
             "armor":None,
             "bag":None,
             "staff":None,
-            "wallet":[],
+            "wallet":{},
             "ingredient-stash":{
                 "-2":0,
                 "-1":0,
@@ -164,92 +185,79 @@ class PC:
             },
             "item-ready":{
                 "slots":0,
-                "contents":[]
+                "contents":{}
             }
         } if existingPC == None else existingPC["equipment"]
-        self.bag = {
-            "consumables":[],
-            "weapons":[],
-            "armors":[],
-            "staffs":[],
-            "trade-goods":[],
-            "crafting-parts":[],
-            "other":[]
-        } if existingPC == None else existingPC["bag"]
 
-    def addToRdyBag(self,item):
+    def addToRdyBag(self,item:Item):
         bag = self.equipment["item-ready"]
-        if len(bag["contents"]) != bag["slots"] and item["type"] == "consumable":
+        if len(bag["contents"]) != bag["slots"] and item.item["type"] == "consumable":
             return False
-        bag["slots"].append(item)
+        bag["slots"][id()] = item.item
         return True
            
-    def addToBag(self,item):
-        type = item["PC"]["type"]+"s"
+    def addToBag(self,item:Item):
+        itemType = item.item["type"]+"s"
         bag = self.bag
-        if type in bag.keys():
-            bag[type].append(item)
-            return type
-        bag["other"].append(item)
+        if itemType in bag.keys():
+            bag[itemType][id()] = item.item
+            return itemType
+        bag["other"][id()] = item.item
         return "other"
 
-    def tryAddToBag(self,newItem):
+    def tryAddToBag(self,newItem:Item):
         currentFill = 0
         bag = self.equipment["bag"]
         for key, type in self.bag.items():
             for item in type:
-                currentFill += item["PC"]["size"]
+                currentFill += type[item]["size"]
         if bag:
             max = bag["slots"]
             if max == currentFill:
                 return "Sorry, your bag is full", False
-            elif max < currentFill+newItem["PC"]["size"]:
+            elif max < currentFill+newItem.item["size"]:
                 return "Sorry, item cannot fit in bag", False
             category = self.addToBag(newItem)
             return f'Item added to bag in category: {category}', True
-        max = self.PC["simple"]["carry-capacity"]
+        max = self.simple["carry-capacity"]
         if max == currentFill:
             return "Sorry, you cant carry anymore", False
-        elif max < currentFill+newItem["PC"]["size"]:
+        elif max < currentFill+newItem.item["size"]:
             return "Sorry, the item you are trying to carry is too big", False
         category = self.addToBag(newItem)
         return f'Item added to your carried items in category: {category}', True
     
-    def equip(self, item):
-        if type(item) != dict:
-            item = item.__dict__
-        itemType = item["item"]["type"]
+    def equip(self, item:Item, id = None):
+        itemType = item.item["type"]
         if itemType not in ["weapon","armor","bag","staff"]:
             return "Sorry, this item cannot be equipped"
         elif not self.equipment[itemType]:
-            for key, category in self.bag.items():
-                for entry in category:
-                    if entry == item and item["item"]["amount"] == 1:
-                        category.remove(item)
-                    elif entry == item:
-                        item["item"]["amount"] -= 1
-            self.equipment[itemType] = item
+            if id:
+                for key, category in self.bag:
+                    if category[id]["amount"] > 1:
+                        category[id]["amount"] -= 1
+                    else: category.pop(id)
+            self.equipment[itemType] = item.item
             self.updateEquipment()
             return "Sucessfully equipped"
-        elif self.tryAddToBag(self.equipment[itemType])[1]:
-            for key, category in self.bag.items():
-                for entry in category:
-                    if entry == item and item["item"]["amount"] == 1:
-                        category.remove(item)
-                    elif entry == item:
-                        item["item"]["amount"] -= 1
-            self.equipment[itemType] = item
+        elif self.tryAddToBag(Item(existingItem= self.equipment[itemType])):
+            if id:
+                for key, category in self.bag:
+                    if category[id]["amount"] > 1:
+                        category[id]["amount"] -= 1
+                    else: category.pop(id)
+            self.equipment[itemType] = item.item
             self.updateEquipment()
             return "Sucessfully equipped, old equipment added to bag"
         return "Sorry, your old equipment cannot fit in your bag"
 
     def calcSkillMods(self):
-        for key, skill in self.PC["skills"].items():
-            formula = (skill["points"]-5)*self.PC["simple"]["level"]/15
+        for key, skill in self.pc["skills"].items():
+            formula = (skill["points"]-5)*self.simple["level"]/15
             skill["mod"] = int(round(formula))
 
     def increaseSkillQuest(self, questId:str, increase:int):
-        for key, skill in self.PC["skills"].items():
+        for key, skill in self.pc["skills"].items():
             if type(skill["bank"]) == list:
                 for quest in skill["bank"]:
                     if quest["id"] == questId:
@@ -259,7 +267,7 @@ class PC:
     def addQuest(self, quest:object):
         quest = quest.__dict__
         skillFromQuest = quest["quest"]["skill"]
-        skillBank = self.PC["skills"][skillFromQuest]["bank"]
+        skillBank = self.pc["skills"][skillFromQuest]["bank"]
         if len(skillBank) != 0:
             quest["id"] = f'{skillFromQuest}{len(skillBank)+1}'
         else:
@@ -270,19 +278,19 @@ class PC:
         bag = self.equipment["bag"]
         armor = self.equipment["armor"]
         if bag != None:
-            self.PC["simple"]["carry-capacity"] = bag["item"]["slots"]
+            self.simple["carry-capacity"] = bag["slots"]
         if armor != None:
-            ap = self.PC["health"]["ap"]
-            ap["max"] = armor["item"]["apMax"]
-            ap["value"] = armor["item"]["apValue"]
+            ap = self.pc["health"]["ap"]
+            ap["max"] = armor["apMax"]
+            ap["value"] = armor["apValue"]
 
     def modifyHealth(self, mod,target):
-        health = self.PC["health"]
-        target = health[target] if target != "dt" else self.PC["dt"]
+        health = self.pc["health"]
+        target = health[target] if target != "dt" else self.pc["dt"]
         print(target)
-        ap = self.PC["health"]["ap"]
-        hp = self.PC["health"]["hp"]
-        dt = self.PC["dt"]
+        ap = self.pc["health"]["ap"]
+        hp = self.pc["health"]["hp"]
+        dt = self.pc["dt"]
         if mod[0] == "+" or mod[0] == "-":
             if mod[1:].isnumeric():
                target["value"] += int(mod)
@@ -297,3 +305,10 @@ class PC:
         elif target["value"] != int(mod) and mod[0] != "+" and mod[0] != "-" and mod.isnumeric():
             target["value"] = int(mod)
             return False
+
+
+
+
+
+
+

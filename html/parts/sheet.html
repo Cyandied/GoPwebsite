@@ -2,45 +2,62 @@
 
 {% block content %}
 <form method="post">
-{% for part in pc.PC.simple %}
-    {{part}}: {{pc.PC.simple[part]}}<br>
-{% endfor %}
-<h4>health</h4>
-ap: 
-<input type="number" name="ap-value" value={{pc.PC.health.ap.value}}>
-/
-<input type="number" name="ap-max" value={{pc.PC.health.ap.max}}>
-hp: 
-<input type="number" name="hp-value" value={{pc.PC.health.hp.value}}>
-/
-<input type="number" name="hp-max" value={{pc.PC.health.hp.max}}>
-<h4>death turns</h4>
-<input type="number" name="dt-value" value={{pc.PC.dt.value}}>
-/
-<input type="number" name="dt-max" value={{pc.PC.dt.max}}>
-<h4>movement</h4>
-{% for terrain in pc.PC.speed %}
-{{terrain}}: {{pc.PC.speed[terrain]}}<br>
-{% endfor %}
-
-{% for skill in pc.PC.skills %}
-    <div>
-        <span class = "click-to-display">{{pc.PC.skills[skill].name}} {{pc.PC.skills[skill].points}} {{pc.PC.skills[skill].mod}}</span>
-        <div class = "display hidden">
-            {% for attribute in pc.PC.skills[skill].attrib %}
-            {{attribute}}
+    <div class="listicle-container">
+        {% for part in pc.simple %}
+        <span class="listicle big">{{part}}: {{pc.simple[part]}}</span>
+        {% endfor %}
+    </div>
+    <div class="cont">
+        <div class="cont-3 item-center">
+            <h4>ap</h4>
+            <div>
+                <input type="number" name="ap-value" value={{pc.pc.health.ap.value}} class="input-sq">
+                /
+                <input type="number" name="ap-max" value={{pc.pc.health.ap.max}} class="input-sq">
+            </div>
+            <h4>hp</h4>
+            <div>
+                <input type="number" name="hp-value" value={{pc.pc.health.hp.value}} class="input-sq">
+                /
+                <input type="number" name="hp-max" value={{pc.pc.health.hp.max}} class="input-sq">
+            </div>
+            <h4>death turns</h4>
+            <div>
+                <input type="number" name="dt-value" value={{pc.pc.dt.value}} class="input-sq">
+                /
+                <input type="number" name="dt-max" value={{pc.pc.dt.max}} class="input-sq">
+            </div>
+        </div>
+        <div class="cont-3 item-center">
+            <h4>movement</h4>
+            {% for terrain in pc.pc.speed %}
+            <span class = "listicle big">{{terrain}}: {{pc.pc.speed[terrain]}}</span>
             {% endfor %}
-            <br>
-            {{pc.PC.skills[skill].desc}} <br>
-            {{pc.PC.skills[skill].activ}} <br>
-        </div> <br>
-        {% if skill not in ["ath","sne"] %}
-        {% for quest in pc.PC.skills[skill].bank %}
+        </div>
+
+        <div class = "cont-3">
+        {% for skill in pc.pc.skills %}
+        <div>
+            <span class="click-to-display fill">{{pc.pc.skills[skill].name}} {{pc.pc.skills[skill].points}}
+                {{pc.pc.skills[skill].mod}}</span>
+            <div class="display hidden">
+                <div class="listicle-container">
+                    {% for attribute in pc.pc.skills[skill].attrib %}
+                    <span class="listicle small">{{attribute}}</span>
+                    {% endfor %}
+                </div>
+                {{pc.pc.skills[skill].desc}} <br>
+                {{pc.pc.skills[skill].activ}} <br>
+            </div> <br>
+            {% if skill not in ["ath","sne"] %}
+            {% for quest in pc.pc.skills[skill].bank %}
             {% if not quest.quest.completed%}
-            {{quest.quest.name}}: 
+            {{quest.quest.name}}:
             {{quest.quest.activity}} <br>
             {{quest.quest.current}}/{{quest.quest.goal}} <br>
-            <progress name={{quest.quest.name}} value={{quest.quest.current}} max={{quest.quest.goal}}></progress><button value=add-quest-progress,{{quest.id}} name="button">+</button>
+            <progress name={{quest.quest.name}} value={{quest.quest.current}}
+                max={{quest.quest.goal}}></progress><button value=add-quest-progress,{{quest.id}}
+                name="button">+</button>
             {{quest.quest.unit}}
             {% else %}
             <span style="color: green;">
@@ -48,16 +65,18 @@ hp:
             </span>
             {% endif %}
 
+            {% endfor %}
+            {% endif %}
+
+        </div>
         {% endfor %}
-        {% endif %}
+    </div>
 
     </div>
-    {% endfor %}
-
-
 
     <button value="edit-mode" name="button">edit sheet</button>
     <button name="button">save</button>
+    <button name="button" value="index">homepage</button>
 </form>
 
 <script defer src="/js/sheet.js"></script>
