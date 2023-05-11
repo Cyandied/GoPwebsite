@@ -28,6 +28,7 @@ class SkillQuest:
 class PC:
     def __init__(self, existingPC:dict = None) -> None:
         self.userID = "" if existingPC == None else existingPC["userID"]
+        self.linkedGame = "" if existingPC == None else existingPC["linkedGame"]
         self.simple = {
                 "name":"",
                 "player-name":"",

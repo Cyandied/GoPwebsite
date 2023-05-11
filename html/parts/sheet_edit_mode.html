@@ -3,7 +3,15 @@
 {% block content %}
 edit mode
 <form method="post">
+    {% if pc.linkedGame %}
+    Linked to game: {{pc.linkedGame.name}} <button value = "unlinkGame" name = "button">unlink game</button>
+    {% else %}
+    <input type="text" name="linkGame" placeholder="paste game id">
+    <button value = "linkGame" name = "button">link game</button>
+    {% endif %}
     {% for part in pc.simple %}
+    <br>
+
     <label for={{part}}>{{part}}</label>
     <input type="text" name={{part}} value={{pc.simple[part]}}>
     {% endfor %}

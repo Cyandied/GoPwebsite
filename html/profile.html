@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post">
+    name: {{user.name}}
+    <input type="text" name="user-id" class="hidden" value="{{user.id}}"> <br>
+    role: {{user.role}}
+    {% if user.role is eq("dm") %}
+    initialize new game:
+    <input type="text" name="game-name" placeholder="game name">
+    <button name="button">submit</button>
+    {% for game in user.games %}
+    <div>
+        <span class="click-to-display">name: {{game}}</span>
+        <div class="display hidden game-id">
+            <span class = "id">{{user.games[game]}}</span>
+            <button type="button" class="game-id">copy ID</button>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <br>
+    <button name="button" value="index">to homepage</button>
+</form>
+<script defer src="/js/profile.js"></script>
+{% endblock %}

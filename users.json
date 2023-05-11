@@ -2,16 +2,25 @@
     {
         "name": "test",
         "password": "test",
-        "id": "bd65600d-8669-4903-8a14-af88203add38"
+        "id": "bd65600d-8669-4903-8a14-af88203add38",
+        "role": "player",
+        "games": {}
     },
     {
         "name": "test2",
         "password": "test2",
-        "id": "9b08b2d9-fa2d-409a-a821-207e0afe01e4"
+        "id": "9b08b2d9-fa2d-409a-a821-207e0afe01e4",
+        "role": "dm",
+        "games": {
+            "new-game": "16bb9fba-a981-403f-a47c-46c91787cc1e",
+            "new-game-plus": "5df31db7-d29e-426a-999c-a5cdd7d68f36"
+        }
     },
     {
         "name": "admin",
         "password": "admin",
-        "id": "admin"
+        "id": "admin",
+        "role": "admin",
+        "games": {}
     }
 ]

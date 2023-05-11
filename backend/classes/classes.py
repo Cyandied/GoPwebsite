@@ -28,9 +28,11 @@ class Area:
         return result
 
 class User():
-    def __init__(self, name, password, id = None) -> None:
+    def __init__(self, name, password,role="player",games = [], id = None) -> None:
         self.name = name
         self.password = password
+        self.role = role
+        self.games = games
         self.id = id or str(uuid.uuid4())
     def to_json(self):        
         return {"name": self.name}

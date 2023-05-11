@@ -96,6 +96,18 @@ def savePC(form:dict,pc:PC,jsonNam:str):
     
     if "add" in button:
         pc.addQuest(SkillQuest(form["quest-skill"],form["quest-name"],form["quest-activity"],int(form["quest-goal"]),0,form["quest-unit"]))
+    
+    if "linkGame" in button:
+        with open("users.json","r") as f:
+            users = json.loads(f.read())
+        for user in users:
+            if user["games"]:
+                for game in user["games"]:
+                    if user["games"][game] == form["linkGame"]:
+                        pc.linkedGame = {"name":game,
+                                         "id":form["linkGame"]}
+    if "unlinkGame" in button:
+        pc.linkedGame = ""
 
     with open(f'PCs/{jsonNam}.json','w') as f:
         f.write(json.dumps(pc.__dict__))
@@ -112,6 +124,18 @@ def saveDetails(form:dict,pc:PC,jsonNam:str):
 
     if "add-quest-progress" in button:
         pc.increaseSkillQuest(button[1],1)
+
+    if "linkGame" in button:
+        with open("users.json","r") as f:
+            users = json.loads(f.read())
+        for user in users:
+            if user["games"]:
+                for game in user["games"]:
+                    if user["games"][game] == form["linkGame"]:
+                        pc.linkedGame = {"name":game,
+                                         "id":form["linkGame"]}
+    if "unlinkGame" in button:
+        pc.linkedGame = ""
 
     with open(f'PCs/{jsonNam}.json','w') as f:
         f.write(json.dumps(pc.__dict__))

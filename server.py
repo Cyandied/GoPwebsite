@@ -2,7 +2,7 @@ import json
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from os import listdir, remove
 from os.path import isfile, join
-from flask_login import LoginManager, UserMixin, login_user, login_required
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 from backend.classes.classes import *
 from backend.classes.charClasses import *
 from backend.classes.itemClasses import *
@@ -23,11 +23,12 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
+    correct_user = ""
     with open("users.json","r") as f:
         users = json.loads(f.read())
     for user in users:
         if user_id == user["id"]:
-            correct_user = User(user["name"], user["password"], user["id"])
+            correct_user = User(user["name"], user["password"], user["role"], user["games"], user["id"])
             
     return correct_user
 
@@ -40,16 +41,34 @@ def login():
         for user in users:
             if request.form["user"] == user["name"]:
                 if request.form["pass"] == user["password"]:
-                    verified_user = User(user["name"], user["password"], user["id"])
+                    verified_user = User(user["name"], user["password"], user["role"], user["games"], user["id"])
                     break
         
         if verified_user:
             login_user(verified_user)
-            session["id"] = verified_user.id
+            session["user"] = verified_user.__dict__
             return redirect(url_for("index"))
     
     
     return render_template("login.html")
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    if request.method == "POST":
+        print(session["user"])
+        if request.form["button"] == "index":
+            return redirect(url_for("index"))
+        if request.form["game-name"]:
+            with open("users.json","r") as f:
+                users = json.loads(f.read())
+            for user in users:
+                if user["id"] == session["user"]["id"]:
+                    user["games"][request.form["game-name"].replace(" ","-")] = str(uuid.uuid4())
+                    session["user"] = user
+            with open(f'users.json','w') as f:
+                f.write(json.dumps(users))
+    return render_template("profile.html", user = session["user"])
 
 @app.route("/index", methods=["GET", "POST"])
 @login_required
@@ -58,23 +77,37 @@ def index():
     for jsonNam in listdir("PCs"):
         with open(f'PCs/{jsonNam}', 'r') as f:
             pc = PC(existingPC=json.loads(f.read()))
-        if pc.userID == session["id"] or session["id"] == "admin":
-            PCs.append(jsonNam.split(".")[0])
+        dm = False
+        games=[]
+        if session["user"]["role"] == "dm":
+            dm = True
+            dmsGames = session["user"]["games"]
+            games = dmsGames.keys()
+            if pc.linkedGame:
+                if pc.linkedGame["id"] in dmsGames.values():
+                    game = list(dmsGames.keys())[list(dmsGames.values()).index(pc.linkedGame["id"])]
+                    PCs.append([jsonNam.split(".")[0],game])
+
+        if pc.userID == session["user"]["id"] or session["user"]["id"] == "admin":
+            PCs.append([jsonNam.split(".")[0],"own"])
 
     if request.method == "POST":
 
         if request.form["sheet-name"]:
-            return redirect(url_for(f'sheet',jsonNam = request.form["sheet-name"]))
+            return redirect(url_for(f'sheet',jsonNam = request.form["sheet-name"].replace(" ","-")))
         elif request.form["redirect-to"] == "load-sheet":
             return redirect(url_for(f'sheet',jsonNam = request.form["sheets"]))
+        elif request.form["redirect-to"]=="log-out":
+            logout_user()
+            return redirect(url_for("login"))
         return redirect(url_for(f'{request.form["redirect-to"]}'))
     
-    return render_template("index.html", PCs = PCs)
+    return render_template("index.html", PCs = PCs, dm = dm, games = games)
 
 @app.route(f'/sheet/<jsonNam>', methods=["GET", "POST"])
 @login_required
 def sheet(jsonNam):
-    sfunc.makeNewJson(jsonNam, session["id"])
+    sfunc.makeNewJson(jsonNam, session["user"]["id"])
     with open(f'PCs/{jsonNam}.json', 'r') as f:
         pc = PC(existingPC=json.loads(f.read()))
 

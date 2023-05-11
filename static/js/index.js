@@ -4,6 +4,21 @@ const loadSheet = document.querySelector("button[value = load-sheet")
 const sheetSelector = document.querySelector("select[name = sheets]")
 const back = document.querySelector("#back")
 const form = document.querySelector("form")
+const dmOpts = document.querySelector("#dmOpts")
+const gameSelection = document.querySelector("select[name = game-selection]")
+
+gameSelection.addEventListener("change",e=>{
+    sheetSelector.querySelectorAll("option").forEach(option =>{
+        if (option.dataset.game != gameSelection.value && gameSelection.value != "all"){
+            option.classList.add("hidden")
+        }
+        else {option.classList.remove("hidden")}
+
+        if (!option.value){
+            option.selected = "selected"
+        }
+    })
+})
 
 newSheet.addEventListener("click", e=> {
     newSheet.innerHTML = "Continue";
@@ -11,6 +26,7 @@ newSheet.addEventListener("click", e=> {
 
     newSheetName.classList.remove("hidden")
     loadSheet.classList.add("hidden")
+    dmOpts.classList.add("hidden")
     sheetSelector.classList.add("hidden")
     back.classList.remove("hidden")
 
@@ -28,6 +44,7 @@ back.addEventListener("click", e=> {
     newSheetName.classList.add("hidden")
     newSheetName.value = ""
     loadSheet.classList.remove("hidden")
+    dmOpts.classList.remove("hidden")
     sheetSelector.classList.remove("hidden")
     back.classList.add("hidden")
 })

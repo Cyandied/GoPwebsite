@@ -1,17 +1,34 @@
 {% extends "base.html" %}
 {% block content %}
 <form method="post">
+    <button value="log-out" name="redirect-to">log out</button> <br>
     <button type="button" id="new-sheet">New sheet</button>
-    <input type="text" id="sheet-name" name="sheet-name" class = "hidden" placeholder="enter name">
+    <input type="text" id="sheet-name" name="sheet-name" class="hidden" placeholder="enter name">
     <button type="button" id="back" class="hidden">Back</button>
+
+    <span id="dmOpts" {% if not dm %} class="hidden" {% endif %}>
+        Show charatcers from:
+        <select name="game-selection">
+            <option value="all" selected>all</option>
+            <option value="own">own sheets</option>
+            {% for game in games %}
+            <option value="{{game}}">{{game}}</option>
+            {% endfor %}
+        </select>
+    </span>
+
     <button value="load-sheet" name="redirect-to">Load sheet</button>
+
     <select name="sheets">
+        <option value="" disabled selected>select sheet</option>
         {% for PC in PCs %}
-        <option value={{PC}}>{{PC}}</option>
+        <option value={{PC[0]}} data-game={{PC[1]}}>{{PC[0]}}</option>
         {% endfor %}
     </select>
     <button value="map" name="redirect-to">Map</button>
     <button value="item" name="redirect-to">Item manager</button>
+    <br>
+    <button value="profile" name="redirect-to">Profile</button>
 </form>
 <script defer src="/js/index.js"></script>
 {% endblock %}

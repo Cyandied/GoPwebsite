@@ -2,6 +2,12 @@
 
 {% block content %}
 <form method="post">
+    {% if pc.linkedGame %}
+    Linked to game: {{pc.linkedGame.name}} <button value = "unlinkGame" name = "button">unlink game</button>
+    {% else %}
+    <input type="text" name="linkGame" placeholder="paste game id">
+    <button value = "linkGame" name = "button">link game</button>
+    {% endif %}
     <div class="listicle-container">
         {% for part in pc.simple %}
         <span class="listicle big">{{part}}: {{pc.simple[part]}}</span>
