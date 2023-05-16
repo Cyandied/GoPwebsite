@@ -1,14 +1,27 @@
-const clickToDisplay = document.querySelectorAll(".click-to-display")
+const modals = document.querySelectorAll(".modal")
+const modalBackgrounds = document.querySelectorAll(".modal-bg")
+const modalButton = document.querySelectorAll(".modal-button")
+const closeModal = document.querySelectorAll(".close-modal")
 
-for (let clickable of clickToDisplay) {
-    clickable.addEventListener("click", e => {
-        const parent = e.target.closest("div")
-        const toDisplay = parent.querySelector(".display")
-        if (toDisplay.classList.contains("hidden")) {
-            toDisplay.classList.remove("hidden")
-        }
-        else {
-            toDisplay.classList.add("hidden")
-        }
+modalButton.forEach(elem => {
+    elem.addEventListener("click", e=>{
+        const modalType = e.target.dataset.modal
+        modalBackgrounds.forEach(modal => {
+            if(modal.dataset.id == modalType){
+                modal.classList.remove("hidden")
+            }
+            else{
+                modal.classList.add("hidden")
+            }
+        })
+
     })
-}
+});
+
+closeModal.forEach(close => {
+    close.addEventListener("click",e=>{
+        modalBackgrounds.forEach(modal => {
+            modal.classList.add("hidden")
+        })
+    })
+});

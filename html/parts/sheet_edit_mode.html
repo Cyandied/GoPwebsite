@@ -3,11 +3,51 @@
 {% block content %}
 edit mode
 <form method="post">
+    <div data-id="test" class="modal-bg hidden">
+        <div data-id="test" class="modal">
+            <button type="button" class="close-modal">no modal</button>
+        </div>
+    </div>
+
+    <div data-id="items" class="modal-bg hidden">
+        <div data-id="items" class="modal">
+            <h4>Item viewer</h4>
+            search:
+            <br>
+            <input type="text" placeholder="item name" class="filter" data-filter="item"><input type="text"
+                placeholder="item type" class="filter" data-filter="item">
+            <button type="button" class="filter" data-filter="item">filter</button>
+            <div class="listicle-container">
+                {% for item in items %}
+                {% if item != "template" %}
+                <div data-type="item" data-name="{{items[item].name}}" data-itemtype="{{items[item].type}}">
+                    <span class="click-to-display listicle">{{items[item].name}}
+                        <button name="button" value="add-item,{{item}}">add to bag</button>
+                        <button name="button" value="equip-item,{{item}}">equip</button>
+                    </span>
+                    <div class="display hidden">
+                        {% for attribute in items[item] %}
+                        {% if attribute not in ["name","desc", "amount","notes"] %}
+                        {{attribute}}: {{items[item][attribute]}} <br>
+                        {% endif %}
+                        {% endfor %}
+                        {{items[item].desc}} <br>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <button type="button" class="close-modal">no modal</button>
+        </div>
+    </div>
+
+    <button type="button" class="modal-button" data-modal="items">yes modal</button>
+
     {% if pc.linkedGame %}
-    Linked to game: {{pc.linkedGame.name}} <button value = "unlinkGame" name = "button">unlink game</button>
+    Linked to game: {{pc.linkedGame.name}} <button value="unlinkGame" name="button">unlink game</button>
     {% else %}
     <input type="text" name="linkGame" placeholder="paste game id">
-    <button value = "linkGame" name = "button">link game</button>
+    <button value="linkGame" name="button">link game</button>
     {% endif %}
     {% for part in pc.simple %}
     <br>
@@ -16,11 +56,11 @@ edit mode
     <input type="text" name={{part}} value={{pc.simple[part]}}>
     {% endfor %}
     <h4>health</h4>
-    ap: 
+    ap:
     <input type="number" name="ap-value" value={{pc.pc.health.ap.value}}>
     /
     <input type="number" name="ap-max" value={{pc.pc.health.ap.max}}>
-    hp: 
+    hp:
     <input type="number" name="hp-value" value={{pc.pc.health.hp.value}}>
     /
     <input type="number" name="hp-max" value={{pc.pc.health.hp.max}}>
@@ -35,8 +75,8 @@ edit mode
     {% endfor %}
     <br>
     <div>
-        <button type="button" class = "click-to-display">add new skill-quest</button>
-        <div class = "display hidden">
+        <button type="button" class="click-to-display">add new skill-quest</button>
+        <div class="display hidden">
             skill:
             <select name="quest-skill">
                 <option value="per">performer</option>
@@ -52,13 +92,14 @@ edit mode
             <input type="text" name="quest-activity" placeholder="quest activity">
             <input type="number" name="quest-goal" placeholder="quest goal">
             <input type="text" name="quest-unit" placeholder="quest unit">
-            <button name = "fin" value = "add">add</button>
+            <button name="fin" value="add">add</button>
         </div>
     </div>
     {% for skill in pc.pc.skills %}
     <div>
-        <span class = "click-to-display">{{pc.pc.skills[skill].name}}</span> <input type="number" name={{skill}}-points value={{pc.pc.skills[skill].points}}> {{pc.pc.skills[skill].mod}}
-        <div class = "display hidden">
+        <span class="click-to-display">{{pc.pc.skills[skill].name}}</span> <input type="number" name={{skill}}-points
+            value={{pc.pc.skills[skill].points}}> {{pc.pc.skills[skill].mod}}
+        <div class="display hidden">
             {% for attribute in pc.pc.skills[skill].attrib %}
             {{attribute}}
             {% endfor %}
@@ -68,17 +109,18 @@ edit mode
         </div> <br>
         {% if skill not in ["ath","sne"] %}
         {% for quest in pc.pc.skills[skill].bank %}
-            {% if not quest.quest.completed%}
-            {{quest.quest.name}}: 
-            {{quest.quest.activity}} <br>
-            {{quest.quest.current}}/{{quest.quest.goal}} <br>
-            <progress name={{quest.quest.name}} value={{quest.quest.current}} max={{quest.quest.goal}}></progress><button value=add-quest-progress,{{quest.id}} name="button">+</button>
-            {{quest.quest.unit}}
-            {% else %}
-            <span style="color: green;">
-                {{quest.quest.name}}
-            </span>
-            {% endif %}
+        {% if not quest.quest.completed%}
+        {{quest.quest.name}}:
+        {{quest.quest.activity}} <br>
+        {{quest.quest.current}}/{{quest.quest.goal}} <br>
+        <progress name={{quest.quest.name}} value={{quest.quest.current}} max={{quest.quest.goal}}></progress><button
+            value=add-quest-progress,{{quest.id}} name="button">+</button>
+        {{quest.quest.unit}}
+        {% else %}
+        <span style="color: green;">
+            {{quest.quest.name}}
+        </span>
+        {% endif %}
 
         {% endfor %}
         {% endif %}
@@ -91,10 +133,10 @@ edit mode
         <div>
             {% if pc.equipment[slot] != None %}
             <span class="click-to-display">{{pc.equipment[slot].name}}</span>
-            <div class = "display hidden">
+            <div class="display hidden">
                 <div>
                     {% for attribute in pc.equipment[slot] if attribute not in ["name","desc"] %}
-                        {{attribute}}: {{pc.equipment[slot][attribute]}}
+                    {{attribute}}: {{pc.equipment[slot][attribute]}}
                     {% endfor %}
                 </div>
                 {{pc.equipment[slot].desc}}
@@ -103,10 +145,27 @@ edit mode
         </div>
         {% endfor %}
     </div>
+    <div>
+        <select name="set">
+            {% for set in pc.sets %}
+            <option value="{{set}}" {% if set=="current" %}selected disabled{% endif %}>{{set}}</option>
+            {% endfor %}
+        </select>
+        <button name="button" value="new-set">new set</button><input type="text" name="new-set-name"
+            placeholder="new set name">
+        <button name="button" value="overwrite">overwrite current set</button>
+        <button name="button" value="load">load selected set</button>
+        <button name="button" value="delete-set">delete selected set</button>
+        {% for action in pc.sets.current %}
+        <div>
+
+        </div>
+        {% endfor %}
+    </div>
 
     <br>
-    <button name = "button">save</button>
-    <button value = "finish" name = "button">finish</button>
+    <button name="button">save</button>
+    <button value="finish" name="button">finish</button>
 </form>
 <script defer src="/js/sheet.js"></script>
 {% endblock %}

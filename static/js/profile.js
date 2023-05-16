@@ -8,7 +8,6 @@ gameIds.forEach(gameId => {
         const buttonText = "copy id"
         button.innerHTML = "id copied!"
         setTimeout(()=>{
-            console.log("im trying to make the button change",buttonText)
             button.innerHTML = buttonText
         }, 2000)
 

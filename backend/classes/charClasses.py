@@ -149,15 +149,9 @@ class PC:
                 }
             }
         } if existingPC == None else existingPC["pc"]
-        self.action = {
-            "sets":{
-                "current":[]
-            },
-            "spells":[],
-            "class":[],
-            "race":[],
-            "other":[]
-        }if existingPC == None else existingPC["action"]
+        self.sets = {
+            "current":[]
+        } if existingPC == None else existingPC["sets"]
         self.bag = {
             "consumables":{},
             "weapons":{},
@@ -197,7 +191,7 @@ class PC:
         bag["slots"][id()] = item.item
         return True
            
-    def addToBag(self,item:Item):
+    def canAddToBag(self,item:Item):
         itemType = item.item["type"]+"s"
         bag = self.bag
         if itemType in bag.keys():
@@ -206,26 +200,26 @@ class PC:
         bag["other"][id()] = item.item
         return "other"
 
-    def tryAddToBag(self,newItem:Item):
+    def addToBag(self,newItem:Item):
         currentFill = 0
         bag = self.equipment["bag"]
         for key, type in self.bag.items():
             for item in type:
-                currentFill += type[item]["size"]
+                currentFill += int(type[item]["size"])
         if bag:
             max = bag["slots"]
             if max == currentFill:
                 return "Sorry, your bag is full", False
-            elif max < currentFill+newItem.item["size"]:
+            elif max < currentFill+int(newItem.item["size"]):
                 return "Sorry, item cannot fit in bag", False
-            category = self.addToBag(newItem)
+            category = self.canAddToBag(newItem)
             return f'Item added to bag in category: {category}', True
         max = self.simple["carry-capacity"]
         if max == currentFill:
             return "Sorry, you cant carry anymore", False
-        elif max < currentFill+newItem.item["size"]:
+        elif max < currentFill+int(newItem.item["size"]):
             return "Sorry, the item you are trying to carry is too big", False
-        category = self.addToBag(newItem)
+        category = self.canAddToBag(newItem)
         return f'Item added to your carried items in category: {category}', True
     
     def equip(self, item:Item, id = None):
@@ -241,7 +235,7 @@ class PC:
             self.equipment[itemType] = item.item
             self.updateEquipment()
             return "Sucessfully equipped"
-        elif self.tryAddToBag(Item(existingItem= self.equipment[itemType])):
+        elif self.addToBag(Item(None, exsistingItem= self.equipment[itemType]))[1]:
             if id:
                 for key, category in self.bag:
                     if category[id]["amount"] > 1:
@@ -285,16 +279,15 @@ class PC:
             ap["max"] = armor["apMax"]
             ap["value"] = armor["apValue"]
 
-    def modifyHealth(self, mod,target):
+    def modifyHealth(self, mod,targetStr):
         health = self.pc["health"]
-        target = health[target] if target != "dt" else self.pc["dt"]
-        print(target)
+        target = health[targetStr] if targetStr != "dt" else self.pc["dt"]
         ap = self.pc["health"]["ap"]
         hp = self.pc["health"]["hp"]
         dt = self.pc["dt"]
         if mod[0] == "+" or mod[0] == "-":
             if mod[1:].isnumeric():
-               target["value"] += int(mod)
+               target["value"] = int(target["value"]) + int(mod)
             if ap["value"] < 0:
                 hp["value"] += ap["value"]
                 ap["value"] = 0
@@ -302,9 +295,15 @@ class PC:
                 dt["max"] = hp["max"]
                 dt["value"] = hp["max"] + hp["value"]
                 hp["value"] = 0
+            if self.equipment["armor"]:
+                print("modifying ap on armor")
+                self.equipment["armor"]["value"] = ap["value"]
             return True
         elif target["value"] != int(mod) and mod[0] != "+" and mod[0] != "-" and mod.isnumeric():
             target["value"] = int(mod)
+            if targetStr == "ap" and self.equipment["armor"]:
+                print("modifying ap on armor")
+                self.equipment["armor"]["value"] = int(mod)
             return False
 
 

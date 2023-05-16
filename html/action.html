@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post">
+    <input type="text" name="id" value="{{currentID}}" class = "hidden">
+    <select name="actionType">
+        {% for actionType in actionTypes %}
+        <option value="{{actionType}}" {% if actionType is eq(actionList.template.type) %} selected {% endif %}>{{actionType}}
+        </option>
+        {% endfor %}
+    </select>
+
+    <button value="get-template" name="button">get template</button>
+    <div class="listicle-container">
+        {% for input in actionList.template %}
+        {% if input is not in ["desc", "notes"] %}
+        <label for={{input}}>{{input}}:</label>
+        <input type="text" name="{{input}}" {% if input is eq("type") %} readonly {% endif %} value="{{actionList.template[input]}}">
+        {% elif input is not in ["notes"] %}
+        <span style="width: 100%;">
+            <label for={{input}}>{{input}}:</label>
+            <textarea name={{input}} style="width: 100%;" rows="3" value="{{actionList.template[input]}}">{{actionList.template[input]}}</textarea>
+        </span>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <button value="save" name="button">save</button>
+    <button value="index" name="button">to homepage</button>
+
+    {% for category in actionTypes %}
+    <h4>{{category}}</h4>
+    <div class="listicle-container">
+        {% for action in actionList %}
+        {% if actionList[action].type is eq(category) and action is not eq("template") %}
+        <div>
+            <span class="click-to-display listicle">{{actionList[action].name}}</span>
+            <div class="display hidden">
+                {% for attribute in actionList[action] %}
+                {% if attribute not in ["name","desc","notes"] %}
+                {{attribute}}: {{actionList[action][attribute]}} <br>
+                {% endif %}
+                {% endfor %}
+                {{actionList[action].desc}} <br>
+                <button value={{action}} name="button">edit</button>
+                <button value="{{action}}_del" name="button">delete</button>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+</form>
+<script defer src="/js/action.js"></script>
+{% endblock %}

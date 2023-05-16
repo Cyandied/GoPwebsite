@@ -74,11 +74,11 @@ def profile():
 @login_required
 def index():
     PCs = [] 
+    dm = False
+    games=[]
     for jsonNam in listdir("PCs"):
         with open(f'PCs/{jsonNam}', 'r') as f:
             pc = PC(existingPC=json.loads(f.read()))
-        dm = False
-        games=[]
         if session["user"]["role"] == "dm":
             dm = True
             dmsGames = session["user"]["games"]
@@ -110,6 +110,10 @@ def sheet(jsonNam):
     sfunc.makeNewJson(jsonNam, session["user"]["id"])
     with open(f'PCs/{jsonNam}.json', 'r') as f:
         pc = PC(existingPC=json.loads(f.read()))
+    with open(f'itemsActions/items.json', 'r') as f:
+        items = json.loads(f.read())
+    with open(f'itemsActions/actions.json', 'r') as f:
+        actions = json.loads(f.read())
 
     form = request.form
 
@@ -122,24 +126,29 @@ def sheet(jsonNam):
         if form["button"] == "index":
             return redirect(url_for("index"))
 
-    return render_template("parts/sheet.html",pc=pc)
+    return render_template("parts/sheet.html",pc=pc, items = items, actions = actions)
 
 @app.route(f'/sheet/<jsonNam>/edit_mode', methods=["GET", "POST"])
 @login_required
 def sheet_edit(jsonNam):
     with open(f'PCs/{jsonNam}.json', 'r') as f:
         pc = PC(existingPC=json.loads(f.read()))
-    
-    form = request.form
+    with open(f'itemsActions/items.json', 'r') as f:
+        items = json.loads(f.read())
+    with open(f'itemsActions/actions.json', 'r') as f:
+        actions = json.loads(f.read())
 
     if request.method == "POST":
 
-        sfunc.savePC(form, pc, jsonNam)
+        form = request.form
+        message = sfunc.savePC(form, pc, jsonNam)
+        if message:
+            flash(message)
 
         if "finish" in form["button"].split(","):
             return redirect(url_for(f'sheet',jsonNam = jsonNam))
         
-    return render_template("parts/sheet_edit_mode.html",pc=pc)
+    return render_template("parts/sheet_edit_mode.html",pc=pc, items = items, actions = actions)
 
 currentID = ""
 
@@ -157,7 +166,7 @@ def item():
         global currentID
 
         if request.form["button"] == "get-template":
-            itemList["template"] = sfunc.getTemplate(request.form["itemType"]).item
+            itemList["template"] = sfunc.getItemTemplate(request.form["itemType"]).item
         
         elif request.form["button"] == "save":
             _currentID = str(uuid.uuid4())
@@ -184,6 +193,48 @@ def item():
             f.write(json.dumps(itemList))
 
     return render_template("item.html", itemTypes = itemTypes, itemList=itemList, currentID = currentID)
+
+@app.route("/action", methods=["GET", "POST"])
+@login_required
+def action():
+    actionTypes = ["spell"]
+
+    with open(f'itemsActions/actions.json', 'r') as f:
+        actionList = json.loads(f.read())
+
+
+    if request.method == "POST":
+
+        global currentID
+
+        if request.form["button"] == "get-template":
+            actionList["template"] = sfunc.getActionTemplate(request.form["actionType"]).action
+        
+        elif request.form["button"] == "save":
+            _currentID = str(uuid.uuid4())
+            if request.form["id"]:
+                _currentID = request.form["id"]
+            actionList[_currentID] = sfunc.saveAction(request, request.form["actionType"])
+            actionList["template"] = {}
+            currentID = ""
+
+        elif request.form["button"] == "index":
+            actionList["template"] = {}
+            with open(f'itemsActions/actions.json','w') as f:
+                f.write(json.dumps(actionList))
+            return redirect(url_for("index"))
+                
+        elif request.form["button"] in actionList:
+            currentID = request.form["button"]
+            actionList["template"] = actionList[request.form["button"]]
+
+        elif request.form["button"].split("_")[0] in actionList:
+            actionList.pop(request.form["button"].split("_")[0])
+
+        with open(f'itemsActions/actions.json','w') as f:
+            f.write(json.dumps(actionList))
+
+    return render_template("action.html", actionTypes = actionTypes, actionList=actionList, currentID = currentID)
 
 @app.route("/map", methods=["GET", "POST"])
 @login_required

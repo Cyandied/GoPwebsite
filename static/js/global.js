@@ -1,4 +1,5 @@
 const clickToDisplay = document.querySelectorAll(".click-to-display")
+const flash = document.querySelector(".flashes")
 
 for (let clickable of clickToDisplay) {
     clickable.addEventListener("click", e => {
@@ -10,5 +11,11 @@ for (let clickable of clickToDisplay) {
         else {
             toDisplay.classList.add("hidden")
         }
+    })
+}
+
+if(flash){
+    flash.addEventListener("click", e=>{
+        flash.classList.add("hidden")
     })
 }
