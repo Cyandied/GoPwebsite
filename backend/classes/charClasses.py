@@ -1,4 +1,5 @@
 from backend.classes.itemClasses import *
+from backend.classes.actionClasses import *
 import uuid
 
 def id():
@@ -35,7 +36,8 @@ class PC:
                 "level":0,
                 "class":"",
                 "race":"",
-                "carry-capacity":0
+                "carry-capacity":0,
+                "action-slots":0
         } if existingPC == None else existingPC["simple"]
         self.pc = {
             "health":{
@@ -61,10 +63,10 @@ class PC:
                 "climbing":0
             },
             "actions":{
-                "spells":[],
-                "class":[],
-                "race":[],
-                "other":[]
+                "spell":{},
+                "class":{},
+                "race":{},
+                "other":{}
             },
             "skills":{
                 "ath":{
@@ -150,7 +152,7 @@ class PC:
             }
         } if existingPC == None else existingPC["pc"]
         self.sets = {
-            "current":[]
+            "current":{}
         } if existingPC == None else existingPC["sets"]
         self.bag = {
             "consumables":{},
@@ -228,19 +230,21 @@ class PC:
             return "Sorry, this item cannot be equipped"
         elif not self.equipment[itemType]:
             if id:
-                for key, category in self.bag:
-                    if category[id]["amount"] > 1:
-                        category[id]["amount"] -= 1
-                    else: category.pop(id)
+                for key, category in enumerate(self.bag):
+                    if id in self.bag[category].keys():
+                        if self.bag[category][id]["amount"] > 1:
+                            self.bag[category][id]["amount"] -= 1
+                        else: self.bag[category].pop(id)
             self.equipment[itemType] = item.item
             self.updateEquipment()
             return "Sucessfully equipped"
         elif self.addToBag(Item(None, exsistingItem= self.equipment[itemType]))[1]:
             if id:
-                for key, category in self.bag:
-                    if category[id]["amount"] > 1:
-                        category[id]["amount"] -= 1
-                    else: category.pop(id)
+                for key, category in enumerate(self.bag):
+                    if id in self.bag[category].keys():
+                        if self.bag[category][id]["amount"] > 1:
+                            self.bag[category][id]["amount"] -= 1
+                        else: self.bag[category].pop(id)
             self.equipment[itemType] = item.item
             self.updateEquipment()
             return "Sucessfully equipped, old equipment added to bag"
@@ -306,7 +310,30 @@ class PC:
                 self.equipment["armor"]["value"] = int(mod)
             return False
 
+    def addAction(self, action:Action):
+        actionType = action.action["type"]
+        self.pc["actions"][actionType][id()] = action.action
+        return f'action added to category {actionType}'
 
+    def makeActionSlots(self):
+        current = self.sets["current"]
+        slots = self.simple["action-slots"]
+        messsage = ""
+        while len(current.keys()) < slots:
+            messsage = f'avaible action slots increased to {slots}\nsaved slots are not affected by this change'
+            if len(current.keys()) == 0:
+                current["slot-1"] = {}
+                continue
+            i = int(list(current.keys())[-1].split("-")[-1]) + 1
+            current[f'slot-{i}'] = {}
+        while len(current.keys()) > slots:
+            messsage = f'avaiable action slots decreased to {slots}\nsaved slots are not affected by this change'
+            i = list(current.keys())[-1].split("-")[-1]
+            current.pop(f'slot-{i}')
+        return messsage
+
+    def addActionToSlot(self, slot, action:Action):
+        self.sets["current"][slot] = action.action
 
 
 

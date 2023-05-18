@@ -96,11 +96,12 @@ def index():
         if request.form["sheet-name"]:
             return redirect(url_for(f'sheet',jsonNam = request.form["sheet-name"].replace(" ","-")))
         elif request.form["redirect-to"] == "load-sheet":
-            return redirect(url_for(f'sheet',jsonNam = request.form["sheets"]))
+            if "sheets" in request.form:
+                return redirect(url_for(f'sheet',jsonNam = request.form["sheets"]))
         elif request.form["redirect-to"]=="log-out":
             logout_user()
             return redirect(url_for("login"))
-        return redirect(url_for(f'{request.form["redirect-to"]}'))
+        else: return redirect(url_for(f'{request.form["redirect-to"]}'))
     
     return render_template("index.html", PCs = PCs, dm = dm, games = games)
 
@@ -121,10 +122,11 @@ def sheet(jsonNam):
 
         sfunc.saveDetails(form,pc,jsonNam)
 
-        if form["button"] == "edit-mode":
-            return redirect(url_for(f'sheet_edit',jsonNam = jsonNam))
-        if form["button"] == "index":
-            return redirect(url_for("index"))
+        if "button" in form:
+            if form["button"] == "edit-mode":
+                return redirect(url_for(f'sheet_edit',jsonNam = jsonNam))
+            if form["button"] == "index":
+                return redirect(url_for("index"))
 
     return render_template("parts/sheet.html",pc=pc, items = items, actions = actions)
 
@@ -144,9 +146,10 @@ def sheet_edit(jsonNam):
         message = sfunc.savePC(form, pc, jsonNam)
         if message:
             flash(message)
-
-        if "finish" in form["button"].split(","):
-            return redirect(url_for(f'sheet',jsonNam = jsonNam))
+        
+        if "button" in form:
+            if "finish" in form["button"].split(","):
+                return redirect(url_for(f'sheet',jsonNam = jsonNam))
         
     return render_template("parts/sheet_edit_mode.html",pc=pc, items = items, actions = actions)
 

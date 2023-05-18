@@ -9,39 +9,7 @@ edit mode
         </div>
     </div>
 
-    <div data-id="items" class="modal-bg hidden">
-        <div data-id="items" class="modal">
-            <h4>Item viewer</h4>
-            search:
-            <br>
-            <input type="text" placeholder="item name" class="filter" data-filter="item"><input type="text"
-                placeholder="item type" class="filter" data-filter="item">
-            <button type="button" class="filter" data-filter="item">filter</button>
-            <div class="listicle-container">
-                {% for item in items %}
-                {% if item != "template" %}
-                <div data-type="item" data-name="{{items[item].name}}" data-itemtype="{{items[item].type}}">
-                    <span class="click-to-display listicle">{{items[item].name}}
-                        <button name="button" value="add-item,{{item}}">add to bag</button>
-                        <button name="button" value="equip-item,{{item}}">equip</button>
-                    </span>
-                    <div class="display hidden">
-                        {% for attribute in items[item] %}
-                        {% if attribute not in ["name","desc", "amount","notes"] %}
-                        {{attribute}}: {{items[item][attribute]}} <br>
-                        {% endif %}
-                        {% endfor %}
-                        {{items[item].desc}} <br>
-                    </div>
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-            <button type="button" class="close-modal">no modal</button>
-        </div>
-    </div>
-
-    <button type="button" class="modal-button" data-modal="items">yes modal</button>
+    <button type="button" class="modal-button" data-modal="test">yes modal</button>
 
     {% if pc.linkedGame %}
     Linked to game: {{pc.linkedGame.name}} <button value="unlinkGame" name="button">unlink game</button>
@@ -128,6 +96,7 @@ edit mode
     </div>
     {% endfor %}
     <div>
+        <h1>Equipment</h1>
         {% for slot in pc.equipment if slot not in ["wallet","ingredient-stash","item-ready"] %}
         <h4>{{slot}}</h4>
         <div>
@@ -145,6 +114,61 @@ edit mode
         </div>
         {% endfor %}
     </div>
+    <div data-id="actions" class="modal-bg hidden">
+        <div class="modal">
+            <div style="display: flex; flex-direction: column;width: 100%;align-items: center;align-content: center;">
+                <h4>all actions</h4>
+                <div class="listicle-container">
+                    {% for action in actions %}
+                    {% if action != "template" %}
+                    <div>
+                        <span class="click-to-display listicle">{{actions[action].name}}</span>
+                        <button name="button" value="add-action,{{action}}">add to list</button>
+                        <div class="display hidden">
+                            {% for attribute in actions[action] %}
+                            {% if attribute not in ["name","desc","notes"] %}
+                            {{attribute}}: {{actions[action][attribute]}} <br>
+                            {% endif %}
+                            {% endfor %}
+                            {{actions[action].desc}} <br>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <h4>your actions</h4>
+                <button name="button" value="add-action-slot">update set</button>
+                <div class="listicle-container">
+                    {% for actionType in pc.pc.actions %}
+                    {% for action in pc.pc.actions[actionType] %}
+                    <div>
+                        <span class="click-to-display listicle">{{pc.pc.actions[actionType][action].name}}</span>
+                        <button name="button" value="remove-action,{{action}}">remove</button>
+                        <select name="slot">
+                            <option value = "" selected disabled>select slot</option>
+                            {% for slot in pc.sets.current %}
+                            <option {% if pc.sets.current[slot] %} style = "color: var(--accent);"{% endif %} value="{{slot}},{{action}},{{pc.pc.actions[actionType][action].type}}">{{slot}}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="display hidden">
+                            {% for attribute in pc.pc.actions[actionType][action] %}
+                            {% if attribute not in ["name","desc","notes"] %}
+                            {{attribute}}: {{pc.pc.actions[actionType][action][attribute]}} <br>
+                            {% endif %}
+                            {% endfor %}
+                            {{pc.pc.actions[actionType][action].desc}} <br>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+            <br>
+            <button type="button" class="close-modal">close</button>
+        </div>
+    </div>
+
+    <button type="button" class="modal-button" data-modal="actions">action viewer</button>
     <div>
         <select name="set">
             {% for set in pc.sets %}
@@ -156,9 +180,85 @@ edit mode
         <button name="button" value="overwrite">overwrite current set</button>
         <button name="button" value="load">load selected set</button>
         <button name="button" value="delete-set">delete selected set</button>
-        {% for action in pc.sets.current %}
+        {% for slot in pc.sets.current %}
         <div>
+            {% if pc.sets.current[slot] %}
+            <h4 class = "click-to-display">{{slot}} - {{pc.sets.current[slot].name}}</h4>
+            <div class="display hidden">
+                {% for attribute in pc.sets.current[slot] %}
+                {% if attribute not in ["name","desc","notes"] %}
+                {{attribute}}: {{pc.sets.current[slot][attribute]}} <br>
+                {% endif %}
+                {% endfor %}
+                {{pc.sets.current[slot].desc}} <br>
+            </div>
+            {% else %}
+            <h4 style="color: var(--dark);">{{slot}} - none</h4>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
 
+    <div data-id="items" class="modal-bg hidden">
+        <div class="modal">
+            <h4>item viewer</h4>
+            <div class="listicle-container">
+                {% for item in items %}
+                {% if item != "template" %}
+                <div>
+                    <span class="click-to-display listicle">{{items[item].name}}
+                        <button name="button" value="add-item,{{item}}">add to bag</button>
+                        <button name="button" value="equip-item,{{item}}">equip</button>
+                    </span>
+                    <div class="display hidden">
+                        {% for attribute in items[item] %}
+                        {% if attribute not in ["name","desc", "amount","notes"] %}
+                        {{attribute}}: {{items[item][attribute]}} <br>
+                        {% endif %}
+                        {% endfor %}
+                        {{items[item].desc}} <br>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <br>
+            <button type="button" class="close-modal">close</button>
+        </div>
+    </div>
+
+    <button type="button" class="modal-button" data-modal="items">item viewer</button>
+
+    <div>
+        <h1>Inventory</h1>
+
+        {% for category in pc.bag %}
+        <h4>{{category}}</h4>
+        <div class="listicle-container">
+            {% for item in pc.bag[category] %}
+            <div data-type="item" data-name="{{pc.bag[category][item].name}}"
+                data-itemtype="{{pc.bag[category][item].type}}">
+                <span class="click-to-display listicle">{{pc.bag[category][item].amount}} - {{pc.bag[category][item].name}}</span><button name="button"
+                    value="delete-item,{{item}}">&#10006;</button><button name="button" value="equip-item,{{item}},{{category}}">equip</button>
+                <div class="display hidden">
+                    {% for attribute in pc.bag[category][item] %}
+                    {% if attribute not in ["name","desc", "amount","notes"] %}
+                    {{attribute}}: {{pc.bag[category][item][attribute]}} <br>
+                    {% endif %}
+                    {% endfor %}
+                    {{pc.bag[category][item].desc}} <br>
+                    <div>
+                        <span>amount:</span><input type="text" name="amount-{{item}}"
+                            value="{{pc.bag[category][item].amount}}">
+                        <br>
+                        <span class="click-to-display">notes</span>
+                        <br>
+                        <textarea class="display hidden" name="notes-{{item}}" cols="30"
+                            rows="10">{{pc.bag[category][item].notes}}</textarea>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         {% endfor %}
     </div>

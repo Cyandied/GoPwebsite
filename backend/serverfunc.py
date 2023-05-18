@@ -90,7 +90,7 @@ def savePC(form:dict,pc:PC,jsonNam:str):
         actions = json.loads(f.read())
 
     for simpleEntry in pc.simple:
-        pc.simple[simpleEntry] = int(form[simpleEntry]) if simpleEntry in ["level","carry-capacity"] else form[simpleEntry]
+        pc.simple[simpleEntry] = int(form[simpleEntry]) if simpleEntry in ["level","carry-capacity","action-slots"] else form[simpleEntry]
     
     for terrain in pc.pc["speed"]:
         pc.pc["speed"][terrain] = int(form[terrain])
@@ -107,7 +107,14 @@ def savePC(form:dict,pc:PC,jsonNam:str):
 
     pc.calcSkillMods()
 
-    button = form["button"].split(",")
+    for category in pc.bag:
+        for item in pc.bag[category]:
+            pc.bag[category][item]["amount"] = int(form[f'amount-{item}'])
+            pc.bag[category][item]["notes"] = form[f'notes-{item}']
+
+    button = form["button"].split(",") if "button" in form else ""
+
+    message = pc.makeActionSlots()
 
     if "new-set" in button:
         if form["new-set-name"]:
@@ -125,14 +132,37 @@ def savePC(form:dict,pc:PC,jsonNam:str):
         if form["set"] != "current":
             pc.sets.pop(form["set"])
 
+    elif "delete-item" in button:
+        for category in pc.bag:
+            if button[1] in pc.bag[category].keys():
+                pc.bag[category].pop(button[1])
+
     elif "add-quest-progress" in button:
         pc.increaseSkillQuest(button[1],1)
     
     elif "add-item" in button:
         message = pc.addToBag(Item(None, exsistingItem=items[button[1]]))[0]
+
+    elif "add-action" in button:
+        message = pc.addAction(Action(None, exsistingAction=actions[button[1]]))
+
+    elif "add-action-slot" in button:
+        print(form["slot"])
+        for selection in form.getlist("slot"):
+            if selection:
+                slot, action, type = selection.split(",")
+                action = pc.pc["actions"][type][action]
+                action = Action(None, exsistingAction=action)
+                pc.addActionToSlot(slot, action)
+                message = "set successfully updated"
+
+    elif "remove-action" in button:
+        for category in pc.pc["actions"]:
+            if button[1] in pc.pc["actions"][category].keys():
+                pc.pc["actions"][category].pop(button[1])
     
     elif "equip-item" in button:
-        message = pc.equip(Item(None, exsistingItem=items[button[1]]))
+        message = pc.equip(Item(None, exsistingItem=items[button[1]])) if button[1] in items.keys() else pc.equip(Item(None, exsistingItem=pc.bag[button[2]][button[1]]), id = button[1])
     
     elif "add" in button:
         pc.addQuest(SkillQuest(form["quest-skill"],form["quest-name"],form["quest-activity"],int(form["quest-goal"]),0,form["quest-unit"]))
